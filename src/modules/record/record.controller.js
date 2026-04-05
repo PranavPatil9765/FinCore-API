@@ -55,8 +55,8 @@ export const listRecords = async (req, res, next) => {
 
 export const getRecord = async (req, res, next) => {
   try {
-    const recordId = Number(req.params.id);
-    if (Number.isNaN(recordId)) {
+    const recordId = req.params.id;
+    if (!recordId) {
       throw new ApiError("Invalid identifier", 400);
     }
     const record = await getRecordByIdService({ id: recordId, requester: req.user });
@@ -68,8 +68,8 @@ export const getRecord = async (req, res, next) => {
 
 export const updateRecord = async (req, res, next) => {
   try {
-    const recordId = Number(req.params.id);
-    if (Number.isNaN(recordId)) {
+    const recordId = req.params.id;
+    if (!recordId) {
       throw new ApiError("Invalid identifier", 400);
     }
     const record = await updateRecordService(recordId, req.body);
@@ -81,8 +81,8 @@ export const updateRecord = async (req, res, next) => {
 
 export const deleteRecord = async (req, res, next) => {
   try {
-    const recordId = Number(req.params.id);
-    if (Number.isNaN(recordId)) {
+    const recordId = req.params.id;
+    if (!recordId) {
       throw new ApiError("Invalid identifier", 400);
     }
     await deleteRecordService(recordId);

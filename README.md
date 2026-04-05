@@ -1,12 +1,14 @@
-# Finance Data Processing and Access Control Backend
+﻿# Finance Data Processing and Access Control Backend
 
-This project implements the backend requirements described in the Zorvyn assignment: a finance dashboard API with role-based access control, transactional record management, and summary analytics.
+This project implements a finance dashboard API with role-based access control, transactional record management, and summary analytics.
 
 ## Key highlights
-- **Structured RBAC**�`ADMIN`, `ANALYST`, and `VIEWER` roles control who can mutate data, read analytics, or just view their records.
+- **Structured RBAC**—`ADMIN`, `ANALYST`, and `VIEWER` roles control who can mutate data, read analytics, or just view their records.
 - **Prisma + PostgreSQL** for persistence, including migrations and a development seed for the default admin user.
 - **Express + Zod** for clean routing, validation, and sensible error payloads.
 - **Utility endpoints** for dashboard summaries and trends plus Swagger documentation at `/api-docs`.
+- **UUID-based identifiers**—`User` and `Record` IDs are UUID strings, so clients should send the full string from the API or Swagger.
+- **Rate limiting**—all routes are subject to the global policy (100 requests per 15 minutes) enforced via middleware and documented in Swagger responses/descriptions.
 
 ## Getting started
 1. **Install dependencies**
@@ -22,9 +24,9 @@ This project implements the backend requirements described in the Zorvyn assignm
    ```bash
    npx prisma generate
    ```
-4. **Run migrations (first setup)**
+4. **Run migrations**
    ```bash
-   npx prisma migrate dev --name init
+   npx prisma migrate reset --force
    ```
 5. **Start the server**
    ```bash
@@ -52,6 +54,10 @@ This project implements the backend requirements described in the Zorvyn assignm
 
 All payloads and responses follow a normalized shape with a `status` and optional `data`/`errors` object.
 
+## Update validation guarantees
+- **Users:** `PATCH /api/users/:id` is guarded by the `updateUserSchema` in `src/modules/user/user.validation.js`; it requires at least one updatable field and enforces the same constraints as creation, so bad email formats, weak passwords, or invalid roles/statuses are rejected before touching the database.
+- **Records:** `PATCH /api/records/:id` uses `recordUpdateSchema`, which only allows the whitelisted properties (`amount`, `type`, `category`, `date`, `notes`) and enforces positive amounts and valid enum values. Every update passes through this Zod layer to avoid partial writes or invalid enums.
+
 ## Access control and validation
 - **Roles** are enforced via middleware (`authenticate` + `authorize`). Admins manage data, analysts read records and analytics, viewers can only read their data.
 - **Validation** is powered by Zod schemas per route. Invalid inputs return `422` with granular issue details.
@@ -60,7 +66,7 @@ All payloads and responses follow a normalized shape with a `status` and optiona
 
 ## Database & seeding
 - The Prisma schema defines `User` and `Record` models plus enums for roles, statuses, and record types.
-- Run `npx prisma migrate dev --name init` to create the schema and `npx prisma generate` to refresh the client.
+- Run `npx prisma migrate reset --force` to apply the migrations (this drops any existing data and builds the UUID-based schema) and `npx prisma generate` to refresh the client.
 - On server start, the backend ensures an `ADMIN` user exists using `ADMIN_EMAIL` and `ADMIN_PASSWORD` from `.env`. Change those before production use.
 
 ## Running & verifying
@@ -68,9 +74,19 @@ All payloads and responses follow a normalized shape with a `status` and optiona
 - Swagger/OpenAPI documentation is available at `http://localhost:5000/api-docs` after boot.
 - Use the default admin credentials to hit protected endpoints, then spin up other roles via `/api/users`.
 
+## Technical Decisions and Trade-offs
+- **Prisma adapter + global client cache:** Prisma 7 requires `adapter`/`accelerateUrl`, so we wrap the PostgreSQL URL with `@prisma/adapter-pg` and cache the client on `globalThis` to avoid multiple instances in development without manually managing a singleton.
+- **UUID primary keys:** Users and records use UUID strings to simplify distributed integrations; the trade-off is a reset migration that drops existing data, which is documented as `npx prisma migrate reset --force`.
+- **Conservative validation surface:** Every route (including updates) has a dedicated Zod schema. It makes the middleware strict but keeps controllers focused on orchestration rather than parsing.
+- **Rate limiting + RBAC:** A single express rate limiter protects the entire API, while `authorize()` centralizes role handling so adding a new endpoint inherits the same guard automatically.
+
+## Additional Notes
+- Swagger is fully self-descriptive; once you log in via `/api/auth/login` with the seeded admin credentials you can click “Try it out,” copy the bearer token into the UI’s authorization modal, and exercise the RBAC-protected endpoints without leaving the browser. The seeded admin credentials default to:
+  - **Email:** `admin@fincore.local`
+  - **Password:** `DevAdmin123!`
+- The user/record update flows reuse the same validation logic as creation, so any future frontend that “edits” records/users can pass the same schema structure listed in Swagger without extra helpers.
+
 ## Assumptions
 1. All records belong to the authenticated user who created them; admins manage across users while viewers see their own data.
 2. The dashboard trends endpoint returns a fixed number of months (default `6`) with zero-filled periods to keep charts predictable.
 3. JWT secrets and admin credentials are safe to seed in development but must be rotated before any deployment.
-
-If you need any additional analytics (category splits, rolling averages, etc.), let me know and I can extend the summary service.

@@ -38,7 +38,10 @@ export const getProfile = (req, res) => {
 
 export const getUserById = async (req, res, next) => {
   try {
-    const userId = Number(req.params.id);
+    const userId = req.params.id;
+    if (!userId) {
+      throw new ApiError("Invalid identifier", 400);
+    }
     if (req.user.id !== userId && req.user.role !== ROLES.ADMIN) {
       throw new ApiError("Forbidden", 403);
     }
@@ -51,7 +54,10 @@ export const getUserById = async (req, res, next) => {
 
 export const updateUser = async (req, res, next) => {
   try {
-    const userId = Number(req.params.id);
+    const userId = req.params.id;
+    if (!userId) {
+      throw new ApiError("Invalid identifier", 400);
+    }
     const user = await updateUserService(userId, req.body);
     return successResponse(res, user, "User updated");
   } catch (error) {
