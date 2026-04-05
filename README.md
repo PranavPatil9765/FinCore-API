@@ -1,4 +1,5 @@
-﻿# Finance Data Processing and Access Control Backend
+﻿# Finance Data Processing and Access Control Backend 
+# URL = https://fincore-api-58ge.onrender.com
 
 This project implements a finance dashboard API with role-based access control, transactional record management, and summary analytics.
 
@@ -6,7 +7,7 @@ This project implements a finance dashboard API with role-based access control, 
 - **Structured RBAC**—`ADMIN`, `ANALYST`, and `VIEWER` roles control who can mutate data, read analytics, or just view their records.
 - **Prisma + PostgreSQL** for persistence, including migrations and a development seed for the default admin user.
 - **Express + Zod** for clean routing, validation, and sensible error payloads.
-- **Utility endpoints** for dashboard summaries and trends plus Swagger documentation at `/api-docs`.
+- **Utility endpoints** for dashboard summaries and trends plus Swagger documentation at `https://fincore-api-58ge.onrender.com/api-docs`.
 - **UUID-based identifiers**—`User` and `Record` IDs are UUID strings, so clients should send the full string from the API or Swagger.
 - **Rate limiting**—all routes are subject to the global policy (100 requests per 15 minutes) enforced via middleware and documented in Swagger responses/descriptions.
 
@@ -74,16 +75,10 @@ All payloads and responses follow a normalized shape with a `status` and optiona
 - Swagger/OpenAPI documentation is available at `http://localhost:5000/api-docs` after boot.
 - Use the default admin credentials to hit protected endpoints, then spin up other roles via `/api/users`.
 
-## Technical Decisions and Trade-offs
-- **Prisma adapter + global client cache:** Prisma 7 requires `adapter`/`accelerateUrl`, so we wrap the PostgreSQL URL with `@prisma/adapter-pg` and cache the client on `globalThis` to avoid multiple instances in development without manually managing a singleton.
-- **UUID primary keys:** Users and records use UUID strings to simplify distributed integrations; the trade-off is a reset migration that drops existing data, which is documented as `npx prisma migrate reset --force`.
-- **Conservative validation surface:** Every route (including updates) has a dedicated Zod schema. It makes the middleware strict but keeps controllers focused on orchestration rather than parsing.
-- **Rate limiting + RBAC:** A single express rate limiter protects the entire API, while `authorize()` centralizes role handling so adding a new endpoint inherits the same guard automatically.
+
 
 ## Additional Notes
-- Swagger is fully self-descriptive; once you log in via `/api/auth/login` with the seeded admin credentials you can click “Try it out,” copy the bearer token into the UI’s authorization modal, and exercise the RBAC-protected endpoints without leaving the browser. The seeded admin credentials default to:
-  - **Email:** `admin@fincore.local`
-  - **Password:** `DevAdmin123!`
+- Swagger is fully self-descriptive; once you log in via `/api/auth/login` with the seeded admin credentials you can click “Try it out,” copy the bearer token into the UI’s authorization modal, and exercise the RBAC-protected endpoints without leaving the browser.
 - The user/record update flows reuse the same validation logic as creation, so any future frontend that “edits” records/users can pass the same schema structure listed in Swagger without extra helpers.
 
 ## Assumptions
