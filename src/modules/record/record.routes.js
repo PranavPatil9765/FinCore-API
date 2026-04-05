@@ -7,7 +7,13 @@ import {
   recordUpdateSchema,
   recordListSchema,
 } from "./record.validation.js";
-import { createRecord, listRecords, getRecord, updateRecord, deleteRecord } from "./record.controller.js";
+import {
+  createRecord,
+  listRecords,
+  getRecord,
+  updateRecord,
+  deleteRecord,
+} from "./record.controller.js";
 import { ROLES } from "../../utils/constants.js";
 
 const router = Router();
@@ -36,13 +42,19 @@ const router = Router();
  *         application/json:
  *           schema:
  *             type: object
- *             required: [amount, type, category, date]
+ *             required:
+ *               - amount
+ *               - type
+ *               - category
+ *               - date
  *             properties:
  *               amount:
  *                 type: number
  *               type:
  *                 type: string
- *                 enum: [INCOME, EXPENSE]
+ *                 enum:
+ *                   - INCOME
+ *                   - EXPENSE
  *               category:
  *                 type: string
  *               date:
@@ -58,7 +70,13 @@ const router = Router();
  *             schema:
  *               $ref: "#/components/schemas/Record"
  */
-router.post("/", authenticate, authorize([ROLES.ADMIN]), validate(recordCreateSchema), createRecord);
+router.post(
+  "/",
+  authenticate,
+  authorize([ROLES.ADMIN]),
+  validate(recordCreateSchema),
+  createRecord
+);
 
 /**
  * @swagger
@@ -90,7 +108,9 @@ router.post("/", authenticate, authorize([ROLES.ADMIN]), validate(recordCreateSc
  *         name: type
  *         schema:
  *           type: string
- *           enum: [INCOME, EXPENSE]
+ *           enum:
+ *             - INCOME
+ *             - EXPENSE
  *       - in: query
  *         name: page
  *         schema:
@@ -100,7 +120,7 @@ router.post("/", authenticate, authorize([ROLES.ADMIN]), validate(recordCreateSc
  *         name: limit
  *         schema:
  *           type: integer
-           default: 20
+ *           default: 20
  *     responses:
  *       200:
  *         description: Paginated records
@@ -114,7 +134,7 @@ router.get(
   authenticate,
   authorize([ROLES.ADMIN, ROLES.ANALYST, ROLES.VIEWER]),
   validate(recordListSchema, "query"),
-  listRecords,
+  listRecords
 );
 
 /**
@@ -141,7 +161,12 @@ router.get(
  *       403:
  *         description: Viewers cannot read other users' records
  */
-router.get("/:id", authenticate, authorize([ROLES.ADMIN, ROLES.ANALYST, ROLES.VIEWER]), getRecord);
+router.get(
+  "/:id",
+  authenticate,
+  authorize([ROLES.ADMIN, ROLES.ANALYST, ROLES.VIEWER]),
+  getRecord
+);
 
 /**
  * @swagger
@@ -167,7 +192,9 @@ router.get("/:id", authenticate, authorize([ROLES.ADMIN, ROLES.ANALYST, ROLES.VI
  *                 type: number
  *               type:
  *                 type: string
- *                 enum: [INCOME, EXPENSE]
+ *                 enum:
+ *                   - INCOME
+ *                   - EXPENSE
  *               category:
  *                 type: string
  *               date:
@@ -183,7 +210,13 @@ router.get("/:id", authenticate, authorize([ROLES.ADMIN, ROLES.ANALYST, ROLES.VI
  *             schema:
  *               $ref: "#/components/schemas/Record"
  */
-router.patch("/:id", authenticate, authorize([ROLES.ADMIN]), validate(recordUpdateSchema), updateRecord);
+router.patch(
+  "/:id",
+  authenticate,
+  authorize([ROLES.ADMIN]),
+  validate(recordUpdateSchema),
+  updateRecord
+);
 
 /**
  * @swagger
@@ -203,6 +236,11 @@ router.patch("/:id", authenticate, authorize([ROLES.ADMIN]), validate(recordUpda
  *       204:
  *         description: Record deleted
  */
-router.delete("/:id", authenticate, authorize([ROLES.ADMIN]), deleteRecord);
+router.delete(
+  "/:id",
+  authenticate,
+  authorize([ROLES.ADMIN]),
+  deleteRecord
+);
 
 export default router;
