@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { RecordType } from "@prisma/client";
+import pkg from "@prisma/client";
+
+const { RecordType } = pkg;
 
 const parseDate = (value) => {
   if (!value) return value;

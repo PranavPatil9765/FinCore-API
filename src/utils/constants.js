@@ -1,4 +1,6 @@
-import { RecordType, Role, UserStatus } from "@prisma/client";
+import pkg from "@prisma/client";
+
+const { RecordType, Role, UserStatus } = pkg;
 
 export const ROLES = Role;
 export const RECORD_TYPES = RecordType;

@@ -1,5 +1,7 @@
 import { z } from "zod";
-import { Role, UserStatus } from "@prisma/client";
+import pkg from "@prisma/client";
+
+const { Role, UserStatus } = pkg;
 
 export const createUserSchema = z.object({
   name: z.string().min(2),

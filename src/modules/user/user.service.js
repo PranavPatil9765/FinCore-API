@@ -1,11 +1,12 @@
 import bcrypt from "bcrypt";
-import { Prisma } from "@prisma/client";
+import pkg from "@prisma/client";
 import prisma from "../../config/db.js";
 import { ApiError } from "../../utils/apiResponse.js";
 import { sanitizeUser } from "../../utils/helpers.js";
 
 const SALT_ROUNDS = 10;
 
+const { Prisma } = pkg;
 const handlePrismaError = (error) => {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
     throw new ApiError("A user with that email already exists", 409);
