@@ -9,6 +9,10 @@ export const validate = (schema, source = "body") => (req, res, next) => {
     return next(new ApiError("Validation failed", 422, errors));
   }
 
-  req[source] = result.data;
+  if (source === "query") {
+    Object.assign(req.query, result.data);
+  } else {
+    req[source] = result.data;
+  }
   return next();
 };
