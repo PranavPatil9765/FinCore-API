@@ -1,10 +1,16 @@
 import app from "./app.js";
-import dotenv from "dotenv";
+import { env } from "./config/env.js";
+import { ensureAdminUser } from "./config/seed.js";
 
-dotenv.config();
+const startServer = async () => {
+  await ensureAdminUser();
+  const PORT = env.PORT;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+};
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+startServer().catch((error) => {
+  console.error("Unable to start server", error);
+  process.exit(1);
 });

@@ -22,6 +22,8 @@ const envSchema = z.object({
   REFRESH_TOKEN_EXPIRES_IN: z.string().default("7d"),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(15 * 60 * 1000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+  ADMIN_EMAIL: z.string().email().default("admin@fincore.local"),
+  ADMIN_PASSWORD: z.string().min(8).default("DevAdmin123!"),
 });
 
 const parsedEnv = envSchema.parse(process.env);
